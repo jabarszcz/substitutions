@@ -1,0 +1,13 @@
+name: substitutions
+author: Jean-Alexandre Barszcz
+license: MIT
+
+library:
+  source-dirs: src
+  ghc-options: -Wall -Wno-type-defaults -Wno-name-shadowing -Wno-missing-signatures
+
+dependencies:
+  - monad-loops
+  - random
+  - MonadRandom
+  - base <= 4.12.0.0
