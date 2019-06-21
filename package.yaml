@@ -7,6 +7,7 @@ library:
   ghc-options: -Wall -Wno-type-defaults -Wno-name-shadowing -Wno-missing-signatures
 
 dependencies:
+  - monad-extras
   - monad-loops
   - random
   - MonadRandom

@@ -5,7 +5,7 @@ import Data.Maybe
 
 import System.Random
 import Control.Monad.Random
-import Control.Monad.Loops
+import Control.Monad.Extra
 
 lambda_prec = 10
 app_prec = 9
@@ -135,8 +135,9 @@ f <!> g = \a -> f a <|> g a
 
 step :: (Alternative f) => Term -> f Term
 step =
-  recurTerm (beta' <!> beta <!> push) merge'
+  recurTerm (beta' <!> push) merge'
 
+evalLeft :: Term -> [Term]
 evalLeft = catMaybes . takeWhile isJust . iterate (>>= step) . pure
 
 oneof :: (RandomGen g) => [a] -> Rand g (Maybe a)
@@ -144,10 +145,17 @@ oneof [] = return Nothing
 oneof ls = Just . (ls !!) <$> getRandomR (0, (length ls) - 1)
 
 evalRandom :: (RandomGen g) => Term -> Rand g [Term]
-evalRandom =
-  unfoldrM (fmap (fmap dupe) <$> oneof . step)
+evalRandom = iterateMaybeM (oneof . step)
+
+evalAll :: Term -> [[Term]]
+evalAll = altUnfold (toMay . step)
   where
-    dupe x = (x, x)
+    toMay [] = Nothing
+    toMay ls = Just ls
+
+altUnfold :: (Alternative m, Monad m) => (a -> Maybe (m a)) -> a -> m [a]
+altUnfold f a =
+  (a:) <$> maybe (pure []) (>>= altUnfold f) (f a)
 
 printEvalRandom :: Term -> IO ()
 printEvalRandom = mapM_ print <=< evalRandIO . evalRandom
